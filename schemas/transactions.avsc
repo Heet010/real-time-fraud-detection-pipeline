@@ -1,0 +1,12 @@
+{
+  "namespace": "com.example.fraud",
+  "type": "record",
+  "name": "Transaction",
+  "fields": [
+    {"name": "transaction_id", "type": "int"},
+    {"name": "user_id",        "type": "int"},
+    {"name": "amount",         "type": "double"},
+    {"name": "timestamp",      "type": "long"},
+    {"name": "country",        "type": "string"}
+  ]
+}
