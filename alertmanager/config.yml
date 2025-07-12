@@ -3,9 +3,9 @@ global:
 
   # SMTP defaults (fill in real values)
   smtp_smarthost: smtp.gmail.com:587
-  smtp_from:      "fraud-alerts@gmail.com"
-  smtp_auth_username: "fraud-alerts@gmail.com"
-  smtp_auth_password: "abcd efgh ijkl mnop"   # 16-char App Password
+  smtp_from:      "detectionfraud0@gmail.com"
+  smtp_auth_username: "detectionfraud0@gmail.com"
+  smtp_auth_password: "yuwq tlqs vqui pckm"   # 16-char App Password
 
 route:
   receiver: "console"
@@ -23,7 +23,7 @@ receivers:
     # 2️⃣ new e-mail receiver
   - name: email-main
     email_configs:
-      - to: on-call@yourdomain.com
+      - to: paramsureliya@gmail.com
         send_resolved: true
         headers:
           Subject: '[Fraud-Pipeline] {{ .CommonLabels.alertname }} – {{ .Status }}'
