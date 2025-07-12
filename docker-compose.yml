@@ -41,9 +41,12 @@ services:
       - "6379:6379"
 
   api:
+    env_file:
+      - .env
     build: .
     container_name: fraud-api
     depends_on:
+      - kafka
       - redis
       - postgres
     volumes:
