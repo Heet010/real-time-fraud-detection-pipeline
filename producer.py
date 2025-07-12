@@ -69,8 +69,8 @@ def generate_transaction():
 if __name__ == "__main__":
     print("🚀 Starting Avro producer...")
     try:
-        i=0
-        while i!=1000:
+        i = 0
+        while i != 1000:
             txn = generate_transaction()
 
             # a) Publish to Kafka (Avro encoded)
@@ -95,7 +95,7 @@ if __name__ == "__main__":
 
             print(f"✅ Sent & stored: {txn}")
             time.sleep(0.01)
-            i+=1
+            i += 1
 
     except KeyboardInterrupt:
         print("🛑 Producer stopped by user.")
