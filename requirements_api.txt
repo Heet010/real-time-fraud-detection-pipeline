@@ -1,0 +1,16 @@
+
+fastapi
+uvicorn[standard]
+redis
+requests
+joblib
+scikit-learn
+prometheus-fastapi-instrumentator
+python-dotenv
+pydantic
+psycopg2-binary
+great_expectations
+pandas
+streamlit
+# Avro‐enabled Kafka client for Schema Registry
+confluent-kafka[avro]

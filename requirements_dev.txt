@@ -1,0 +1,7 @@
+pytest
+pytest-cov
+flake8
+fastapi
+httpx
+confluent-kafka[avro]
+psycopg2-binary
