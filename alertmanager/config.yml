@@ -1,0 +1,33 @@
+global:
+  resolve_timeout: 5m
+
+  # SMTP defaults (fill in real values)
+  smtp_smarthost: smtp.gmail.com:587
+  smtp_from:      "fraud-alerts@gmail.com"
+  smtp_auth_username: "fraud-alerts@gmail.com"
+  smtp_auth_password: "abcd efgh ijkl mnop"   # 16-char App Password
+
+route:
+  receiver: "console"
+  routes:
+    - receiver: email-main
+      matchers:
+        - severity=~"warning|critical"  
+
+receivers:
+  - name: "console"
+    # In prod you’d configure email, Slack, etc.
+    webhook_configs:
+      - url: "http://localhost:5001/"  # a dummy receiver that just logs
+
+    # 2️⃣ new e-mail receiver
+  - name: email-main
+    email_configs:
+      - to: on-call@yourdomain.com
+        send_resolved: true
+        headers:
+          Subject: '[Fraud-Pipeline] {{ .CommonLabels.alertname }} – {{ .Status }}'
+        html: |
+          <p><b>{{ .CommonAnnotations.summary }}</b></p>
+          <p>{{ .CommonAnnotations.description }}</p>
+          <p><i>Time:</i> {{ .StartsAt }}</p>

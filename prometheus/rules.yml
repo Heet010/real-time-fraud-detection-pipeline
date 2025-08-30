@@ -1,0 +1,33 @@
+groups:
+  # ──────────────────────────────────────────────────────────────
+  - name: FraudAlerts
+    rules:
+
+      # 1️⃣  High request volume to /predict  (your original rule)
+      - alert: HighPredictTraffic
+         # ▸ correct labels ◂          ▸ 1-minute window while you test ◂
+        expr: sum(rate(http_requests_total{handler="/predict",status="2xx"}[1m])) > 0.5
+        for: 30s                        # short “for:” so you don’t wait long
+        labels:
+          severity: info
+        annotations:
+          summary:       "High /predict traffic ({{ $value | humanize }} req/s)"
+          description: >
+           The /predict endpoint has averaged more than 0.5 requests per second
+           over the last minute.
+
+      # 2️⃣  High fraud-rate (new rule)
+      - alert: HighFraudRate
+        expr: |
+          sum(increase(fraud_summary_is_fraud_total[5m]))
+          /
+          sum(increase(fraud_summary_total_transactions_total[5m]))
+          > 0.05
+        for: 2m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Fraud rate exceeded 5 %"
+          description: >
+            More than 5 % of transactions have been flagged as fraud during
+            the last 5 minutes.
