@@ -1,0 +1,35 @@
+name: Daily ETL Cleanup
+
+# Runs daily at 03:00 UTC and supports manual dispatch
+on:
+  schedule:
+    - cron: '0 3 * * *'
+  workflow_dispatch:
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx (with Compose)
+        uses: docker/setup-buildx-action@v2
+
+      - name: Start services needed
+        run: |
+          docker compose up -d redis kafka zookeeper
+
+      - name: Run ETL cleanup script
+        run: |
+          chmod +x etl_cleanup.sh
+          ./etl_cleanup.sh
+
+      - name: Archive logs
+        uses: actions/upload-artifact@v4
+        with:
+          name: etl-cleanup-logs-${{ github.run_date }}
+          path: |
+            producer.log.gz
+            consumer.log.gz
+            backup.log.gz
