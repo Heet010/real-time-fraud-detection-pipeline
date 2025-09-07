@@ -1,0 +1,41 @@
+name: Nightly Fraud Summary Backup
+
+# Runs on a schedule and supports manual dispatch
+on:
+  schedule:
+    - cron: '0 2 * * *'  # Every day at 02:00 UTC
+  workflow_dispatch:    # Manual trigger via UI
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx (with Compose plugin)
+        uses: docker/setup-buildx-action@v2
+        with:
+          buildkitd-flags: --debug
+
+      - name: Start Postgres container
+        run: |
+          # Use Docker Compose V2 plugin
+          docker compose up -d postgres
+
+      - name: Wait for Postgres to be ready
+        run: |
+          until docker exec fraud-postgres pg_isready -U postgres; do
+            echo "Waiting for Postgres..." && sleep 2
+          done
+
+      - name: Run backup script
+        run: |
+          chmod +x backup_fraud_summary.sh
+          ./backup_fraud_summary.sh
+
+      - name: Upload backup as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: fraud-summary-backup-${{ github.run_date }}
+          path: backups/fraud_summary_*.csv
