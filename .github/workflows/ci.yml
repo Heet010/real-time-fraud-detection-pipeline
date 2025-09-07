@@ -1,0 +1,98 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build_and_test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_DB:       fraud_db
+          POSTGRES_USER:     postgres
+          POSTGRES_PASSWORD: password
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U postgres"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+      redis:
+        image: redis:6.2
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd="redis-cli ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+      zookeeper:
+        image: confluentinc/cp-zookeeper:6.2.1
+        ports:
+          - 2181:2181
+
+      kafka:
+        image: confluentinc/cp-kafka:6.2.1
+        ports:
+          - 9092:9092
+        env:
+          KAFKA_BROKER_ID:                     1
+          KAFKA_ZOOKEEPER_CONNECT:            zookeeper:2181
+          KAFKA_LISTENERS:                     PLAINTEXT://0.0.0.0:9092
+          KAFKA_ADVERTISED_LISTENERS:          PLAINTEXT://localhost:9092
+          KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+
+      schema-registry:
+        image: confluentinc/cp-schema-registry:7.5.0
+        ports:
+          - 8081:8081
+        env:
+          SCHEMA_REGISTRY_HOST_NAME:             schema-registry
+          SCHEMA_REGISTRY_LISTENERS:             http://0.0.0.0:8081
+          SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: PLAINTEXT://kafka:9092
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements_api.txt
+          pip install -r requirements_dev.txt
+
+      - name: Wait for services to be ready
+        run: sleep 20
+
+      - name: Lint with flake8
+        run: |
+          pip install flake8
+          flake8 .
+
+      - name: Run tests
+        env:
+          DATABASE_URL:             postgresql://postgres:password@localhost:5432/fraud_db
+          PYTHONPATH:               ${{ github.workspace }}
+          REDIS_HOST:               localhost
+          REDIS_PORT:               6379
+          KAFKA_BOOTSTRAP_SERVERS:  localhost:9092
+          SCHEMA_REGISTRY_URL:      http://localhost:8081
+        run: |
+          pytest --cov=.
+
+      - name: Build API Docker image
+        run: docker compose build api
