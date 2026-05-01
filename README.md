@@ -55,6 +55,8 @@ flowchart LR
 	 PG2 --> S
 ```
 
+Note: this is a Mermaid flowchart, so layout direction is controlled by `flowchart LR` (left-to-right) or `flowchart TB` (top-to-bottom). There are no interactive left/right/up/down buttons in the diagram itself.
+
 Core services are orchestrated in `docker-compose.yml`.
 
 ## 3. Repository Structure
@@ -387,4 +389,4 @@ Common issues and checks:
 
 ## License
 
-See `LICENSE`.
+This project is licensed under the MIT License. See `LICENSE` for full text.
